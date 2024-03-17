@@ -9,7 +9,9 @@ app.use(morgan("dev")); // morgan("combined")
 app.use(helmet());
 app.use(compression()); //size data
 //init db
-
+require('./dbs/init.mongodb')
+const {checkOverload} = require('./helpers/check.connect')
+checkOverload()
 //init routes
 app.get("/", (req, res, next) => {
   const strCompress = "Hello FanTipjs";
