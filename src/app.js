@@ -10,18 +10,16 @@ const app = express();
 app.use(morgan("dev")); // morgan("combined")
 app.use(helmet());
 app.use(compression()); //size data
+app.use(express.json());
+app.use(express.urlencoded({
+    extended:true
+}));
 //init db
 require('./dbs/init.mongodb')
 // const {checkOverload} = require('./helpers/check.connect')
 // checkOverload()
 //init routes
-app.get("/", (req, res, next) => {
-  const strCompress = "Hello FanTipjs";
-  return res.status(200).json({
-    message: "Welcome FanTipjs",
-    metadata: strCompress.repeat(100000),
-  });
-});
+app.use('/',require('./routes'))
 //handling error
 
 module.exports = app;
