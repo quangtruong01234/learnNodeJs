@@ -1,5 +1,4 @@
-'use strict'
-const {StatusCodes,ReasonPhrases} = require('../utils/httpStatusCode')
+import {StatusCodes,ReasonPhrases} from '../utils/httpStatusCode'
 const StatusCode = {
     FORBIDDEN: 403,
     CONFLICT:409
@@ -10,7 +9,8 @@ const ReasonStatusCode = {
     CONFLICT: 'Conflict error'
 }
 class ErrorResponse extends Error{
-    constructor(message,status){
+    status: number
+    constructor(message: string,status: number){
         super(message)
         this.status = status
     }
@@ -34,7 +34,7 @@ class AuthFailureError extends ErrorResponse{
     }
 }
 
-module.exports = {
+export {
     ConflictRequestError,
     BadRequestError,
     AuthFailureError

@@ -1,6 +1,7 @@
 'use strict'
 
-const {Schema,model} = require('mongoose'); // Erase if already required
+import { IKeyToken } from '@/validations/keyToken';
+import {Schema,model} from 'mongoose' // Erase if already required
 const DOCUMENT_NAME = 'Key'
 const COLLECTION_NAME = 'Keys'
 // Declare the Schema of the Mongo model
@@ -31,4 +32,6 @@ var keyTokenSchema = new Schema({
     timestamps:true
 });
 //Export the model
-module.exports = model(DOCUMENT_NAME, keyTokenSchema);
+const keyToken = model<IKeyToken>(DOCUMENT_NAME, keyTokenSchema);
+
+export default keyToken;

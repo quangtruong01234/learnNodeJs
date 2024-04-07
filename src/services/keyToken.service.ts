@@ -1,8 +1,13 @@
 "use strict";
-const keyTokenModel = require("../models/keyToken.model");
-
+import keyTokenModel from "../models/keyToken.model";
+interface createToken{
+  userId?:string, 
+  publicKey?:string, 
+  privateKey?:string,
+  refreshToken?:string,
+}
 class KeyTokenService {
-  static createKeyToken = async ({ userId, publicKey, privateKey,refreshToken }) => {
+  static createKeyToken = async ({ userId, publicKey, privateKey,refreshToken }:createToken) => {
     try {
       //level 0
       // const tokens = await keyTokenModel.create({
@@ -33,4 +38,4 @@ class KeyTokenService {
   };
 }
 
-module.exports = KeyTokenService;
+export default KeyTokenService;

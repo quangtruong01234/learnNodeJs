@@ -1,6 +1,7 @@
 'use strict'
 
-const {model, Schema, Types} = require('mongoose')
+import { IApiKey } from '@/validations/apikey';
+import {model, Schema, Types} from 'mongoose'
 const DOCUMENT_NAME = "ApiKey";
 const COLLECTION_NAME = "ApiKeys";
 // Declare the Schema of the Mongo model
@@ -25,4 +26,5 @@ var apiKeySchema = new Schema({
 });
 
 //Export the model
-module.exports = model(DOCUMENT_NAME, apiKeySchema);
+const ApiKeyModel = model<IApiKey>(DOCUMENT_NAME, apiKeySchema);
+export default ApiKeyModel;

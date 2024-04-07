@@ -1,18 +1,29 @@
 "use strict";
-const shopModel = require("../models/shop.model");
-const bcrypt = require("bcrypt");
-const crypto = require("node:crypto");
-const KeyTokenService = require("./keyToken.service");
-const { createTokenPair } = require("../auth/authUtils");
-const { getInfoData } = require("../utils");
-const { BadRequestError, AuthFailureError } = require("../core/error.response");
-const { findByEmail } = require("./shop.service");
+import shopModel from "../models/shop.model"
+import bcrypt from "bcrypt"
+import crypto from "node:crypto"
+import KeyTokenService from "./keyToken.service"
+import { createTokenPair } from "../auth/authUtils"
+import { getInfoData } from "../utils";
+import { BadRequestError, AuthFailureError } from "../core/error.response"
+import { findByEmail } from "./shop.service"
+import { IShop } from "@/validations/auth";
 const RoleShop = {
   SHOP: "SHOP",
   WRITER: "WRITER",
   EDITOR: "EDITOR",
   ADMIN: "ADMIN",
 };
+interface LoginParams {
+  email: string;
+  password: string;
+  refreshToken?: string | null;
+}
+interface RegisterParams {
+  email: string;
+  password: string;
+  name?: string;
+}
 class AccessService {
   /**
    * 1- check email in dbs
@@ -21,7 +32,7 @@ class AccessService {
    * 4- generate tokens
    * 5- get data return login
    */
-  static login = async ({ email, password, refreshToken = null }) => {
+  static login = async ({ email, password, refreshToken = null }:LoginParams) => {
     //1
     const foundShop = await findByEmail({ email });
     if (!foundShop) throw new BadRequestError("Shop not registered");
@@ -45,14 +56,16 @@ class AccessService {
     })
     return {
         shop: getInfoData({
-          fields: ["_id", "name", "email"],
+          fields: ["_id" , "name", "email"],
           object: foundShop,
         }),
         tokens,
     };
   };
 
-  static signUp = async ({ name, email, password }) => {
+  static signUp = async (
+    { name, email, password }:RegisterParams
+    ) => {
     // try {
     // step1: check email exists??
     const holderShop = await shopModel.findOne({ email }).lean();
@@ -120,4 +133,4 @@ class AccessService {
     // }
   };
 }
-module.exports = AccessService;
+export default AccessService;
