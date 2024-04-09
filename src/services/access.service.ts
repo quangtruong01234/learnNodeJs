@@ -31,6 +31,42 @@ class AccessService {
    * 
    */
 
+  static handlerRefreshTokenV2 = async ({ refreshToken, user, keyStore }: {
+    refreshToken: string | string[]
+    user: JWT.JwtPayload;
+    keyStore: IKeyToken;
+  }) => {
+    const { userId, email } = user;
+    if (keyStore.refreshTokensUsed.includes(String(refreshToken))) {
+      await KeyTokenService.deleteKeyById(userId)
+      throw new ForbiddenError('Something wrong happened !! Pls relogin')
+    }
+
+    if (keyStore.refreshToken !== refreshToken) throw new AuthFailureError('Shop not registered')
+
+    const foundShop = await findByEmail({ email })
+    if (!foundShop) throw new AuthFailureError('Shop not registered 2')
+    // create 1 cap moi
+    const tokens = await createTokenPair({ userId, email },
+      keyStore.publicKey,
+      keyStore.privateKey
+    );
+
+    //update token
+    await keyStore.updateOne({
+      $set: {
+        refreshToken: tokens.refreshToken
+      },
+      $addToSet: {
+        refreshTokensUsed: refreshToken // da duoc su dung de lay token moi roi
+      }
+    })
+    return {
+      user: { userId, email },
+      tokens
+    }
+  }
+
   static handlerRefreshToken = async (refreshToken: string) => {
 
     // check xem token nay da duoc su dung chua?
@@ -46,15 +82,15 @@ class AccessService {
 
     // No, qua ngon
     const holderToken = await KeyTokenService.findByRefreshToken(refreshToken);
-    if(!holderToken) throw new AuthFailureError('Shop not registered 1')
-    
+    if (!holderToken) throw new AuthFailureError('Shop not registered 1')
+
     // verifyToken
     const { userId, email } = await verifyJWT(refreshToken, holderToken.privateKey) as JWT.JwtPayload;
-    console.log('[2]--', {userId, email});
-    
+    console.log('[2]--', { userId, email });
+
     // check UserId
-    const foundShop = await findByEmail({email})
-    if(!foundShop) throw new AuthFailureError('Shop not registered 2')
+    const foundShop = await findByEmail({ email })
+    if (!foundShop) throw new AuthFailureError('Shop not registered 2')
 
     // create 1 cap moi
     const tokens = await createTokenPair({ userId, email },
@@ -64,15 +100,15 @@ class AccessService {
 
     //update token
     await holderToken.updateOne({
-      $set:{
+      $set: {
         refreshToken: tokens.refreshToken
       },
-      $addToSet:{
-        refreshTokensUsed:refreshToken // da duoc su dung de lay token moi roi
+      $addToSet: {
+        refreshTokensUsed: refreshToken // da duoc su dung de lay token moi roi
       }
     })
-    return{
-      user:{ userId, email },
+    return {
+      user: { userId, email },
       tokens
     }
 
@@ -80,7 +116,7 @@ class AccessService {
 
   static logout = async (keyStore: IKeyToken) => {
     const delKey = await KeyTokenService.removeKeyById(String(keyStore._id))
-    console.log({ delKey})
+    console.log({ delKey })
     return delKey
   }
 

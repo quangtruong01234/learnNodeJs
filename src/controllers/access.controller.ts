@@ -6,10 +6,22 @@ import { NextFunction, Response } from "express";
 
 
 class AccessController {
+  // handlerRefreshToken = async (req:CustomRequest, res:Response, next:NextFunction):Promise<void> => {
+  //   new SuccessResponse({
+  //     message:'Get token Success',
+  //     metadata: await AccessService.handlerRefreshToken(req.body.refreshToken)
+  //   }).send(res)
+  // }
+
+  // v2 fixed, no need accessToken
   handlerRefreshToken = async (req:CustomRequest, res:Response, next:NextFunction):Promise<void> => {
     new SuccessResponse({
       message:'Get token Success',
-      metadata: await AccessService.handlerRefreshToken(req.body.refreshToken)
+      metadata: await AccessService.handlerRefreshTokenV2({
+        refreshToken: req.refreshToken,
+        user:req.user,
+        keyStore:req.keyStore
+      })
     }).send(res)
   }
 
