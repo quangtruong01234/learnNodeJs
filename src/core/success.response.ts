@@ -16,19 +16,19 @@ interface SuccessResponseParams {
     message?: string;
     statusCode?: number;
     reasonStatusCode?: string;
-    metadata?: Record<string, unknown>;
+    metadata?: any
 }
 class SuccessResponse {
     message: string;
     status: number;
-    metadata: Record<string, unknown>;
+    metadata: any
     constructor({ message, statusCode = StatusCode.OK, reasonStatusCode = ReasonStatusCode.OK, metadata = {} }:SuccessResponseParams) {
         this.message = !message ? reasonStatusCode : message
         this.status = statusCode
         this.metadata = metadata
     }
 
-    send(res: Response<any, Record<string, any>>, headers = {}) {
+    send(res: Response, headers = {}) {
         return res.status(this.status).json(this)
     }
 }

@@ -8,6 +8,7 @@ import { getInfoData } from "../utils";
 import { BadRequestError, AuthFailureError } from "../core/error.response"
 import { findByEmail } from "./shop.service"
 import { IShop } from "@/validations/auth";
+import { IKeyToken } from "@/validations/keyToken";
 const RoleShop = {
   SHOP: "SHOP",
   WRITER: "WRITER",
@@ -25,6 +26,13 @@ interface RegisterParams {
   name?: string;
 }
 class AccessService {
+
+  static logout = async (keyStore:IKeyToken)=>{
+    const delKey = await KeyTokenService.removeKeyById(String(keyStore._id))
+    console.log({delKey})
+    return delKey
+  }
+
   /**
    * 1- check email in dbs
    * 2- match password
@@ -123,14 +131,6 @@ class AccessService {
       code: 200,
       metadata: null,
     };
-    // } catch (error) {
-    //     console.error(error)
-    //     return{
-    //         code:'XXX',
-    //         message:error.message,
-    //         static:'error'
-    //     }
-    // }
   };
 }
 export default AccessService;

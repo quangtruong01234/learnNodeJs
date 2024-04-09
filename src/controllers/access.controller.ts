@@ -1,11 +1,17 @@
-import { Process } from "@/types/process";
+import { CustomRequest, Process } from "@/types/process";
 
 import { CREATED, SuccessResponse } from "../core/success.response";
 import AccessService from "../services/access.service";
-import { NextFunction, Request, Response } from "express";
+import { NextFunction, Response } from "express";
 
 
 class AccessController {
+  logout = async (req:CustomRequest, res:Response, next:NextFunction):Promise<void> => {
+    new SuccessResponse({
+      message:'Logout Success',
+      metadata: await AccessService.logout(req.keyStore!)
+    }).send(res)
+  }
   login: Process = async (req, res, next) => {
     new SuccessResponse({
       metadata: await AccessService.login(req.body)

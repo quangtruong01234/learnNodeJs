@@ -1,14 +1,20 @@
-import { Process } from "@/types/process";
-
 import * as JWT from 'jsonwebtoken'; // Make sure to install @types/jsonwebtoken for types
-import asyncHandler from '../helpers/asyncHandler';
+import { AuthFailureError, NotFoundError } from "@/core/error.response";
+import KeyTokenService from "@/services/keyToken.service";
+import { NextFunction, Response } from 'express';
+import { CustomRequest } from '@/types/process';
+import asyncHandler from '@/helpers/asyncHandler';
 
 // Define a type for the payload
 interface Payload {
     // Define the structure of your payload here
     [key: string]: any;
 }
-
+const HEADER = {
+    API_KEY: "x-api-key",
+    CLIENT_ID: 'x-client-id',
+    AUTHORIZATION: "authorization",
+};
 const createTokenPair = async (
     payload: Payload,
     publicKey: string,
@@ -41,17 +47,38 @@ const createTokenPair = async (
         throw error;
     }
 };
-// const authentication = asyncHandler(async ({ req, res, next }: Process) => {
-//     next();
-//     /**
-//      * 1 - check userId missing???
-//      * 2 - get access token
-//      * 3 - verifyToken
-//      * 4 - check user in bds?
-//      * 5 - check keyStore with this userId?
-//      * 6 - OK all => return next()
-//      */
-// })
+const authentication = asyncHandler(async (req, res, next) => {
+    /**
+ * 1 - check userId missing???
+ * 2 - get access token
+ * 3 - verifyToken
+ * 4 - check user in bds?
+ * 5 - check keyStore with this userId?
+ * 6 - OK all => return next()
+ */
+
+    const userId = req.headers[HEADER.CLIENT_ID]
+    if (!userId) throw new AuthFailureError('Invalid request')
+
+    //2
+    const keyStore = await KeyTokenService.findByUserId(String(userId))
+    if (!keyStore) throw new NotFoundError('Not found key store')
+
+    //3
+    const accessToken = req.headers[HEADER.AUTHORIZATION]
+    if (!accessToken) throw new AuthFailureError('Invalid request')
+
+    try {
+        const decodeUser = JWT.verify(String(accessToken), keyStore.publicKey) as JWT.JwtPayload
+        if (userId !== decodeUser.userId) throw new AuthFailureError('Invalid userId')
+        req.keyStore = keyStore
+        return next()
+    } catch (error) {
+        throw error
+    }
+
+})
 export {
     createTokenPair,
+    authentication,
 }

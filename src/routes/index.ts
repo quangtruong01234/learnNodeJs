@@ -9,7 +9,6 @@ const router = express.Router();
 router.use(apiKey)
 //check permission
 router.use(permission('0000'))
-
 router.use('/v1/api',accessRoutes)
 
 // router.get("", (req, res, next) => {

@@ -1,13 +1,15 @@
 "use strict";
+import { ObjectId, Types } from "mongoose";
 import keyTokenModel from "../models/keyToken.model";
-interface createToken{
-  userId?:string, 
-  publicKey?:string, 
-  privateKey?:string,
-  refreshToken?:string,
+import { IKeyToken } from "@/validations/keyToken";
+interface createToken {
+  userId?: string,
+  publicKey?: string,
+  privateKey?: string,
+  refreshToken?: string,
 }
 class KeyTokenService {
-  static createKeyToken = async ({ userId, publicKey, privateKey,refreshToken }:createToken) => {
+  static createKeyToken = async ({ userId, publicKey, privateKey, refreshToken }: createToken) => {
     try {
       //level 0
       // const tokens = await keyTokenModel.create({
@@ -25,17 +27,26 @@ class KeyTokenService {
           refreshTokensUsed: [],
           refreshToken,
         },
-      options = { upsert: true, new: true };
+        options = { upsert: true, new: true };
       const tokens = await keyTokenModel.findOneAndUpdate(
         filter,
         update,
         options
       );
-      return tokens? tokens.publicKey:null
+      return tokens ? tokens.publicKey : null
     } catch (error) {
       return error;
     }
   };
+
+  static findByUserId = async (userId: string) => {
+    return await keyTokenModel.findOne({ user: new Types.ObjectId(userId) }).lean();
+  }
+  static async removeKeyById(id:string): Promise<void> {
+    await keyTokenModel.deleteOne({
+      _id: new Types.ObjectId(id),
+    });
+  }
 }
 
 export default KeyTokenService;
