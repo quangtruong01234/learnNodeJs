@@ -78,7 +78,12 @@ const authentication = asyncHandler(async (req, res, next) => {
     }
 
 })
+
+const verifyJWT = async (token:string,keySecret:string) => {
+    return await JWT.verify(token, keySecret)
+}
 export {
     createTokenPair,
     authentication,
+    verifyJWT
 }

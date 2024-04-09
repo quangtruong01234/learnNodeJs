@@ -6,6 +6,13 @@ import { NextFunction, Response } from "express";
 
 
 class AccessController {
+  handlerRefreshToken = async (req:CustomRequest, res:Response, next:NextFunction):Promise<void> => {
+    new SuccessResponse({
+      message:'Get token Success',
+      metadata: await AccessService.handlerRefreshToken(req.body.refreshToken)
+    }).send(res)
+  }
+
   logout = async (req:CustomRequest, res:Response, next:NextFunction):Promise<void> => {
     new SuccessResponse({
       message:'Logout Success',

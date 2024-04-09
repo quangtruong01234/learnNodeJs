@@ -47,6 +47,17 @@ class KeyTokenService {
       _id: new Types.ObjectId(id),
     });
   }
+  static findByRefreshTokenUsed = async (refreshToken:string) =>{
+    return await keyTokenModel.findOne({ refreshTokensUsed:refreshToken}).lean();
+  }
+
+  static findByRefreshToken = async (refreshToken:string) =>{
+    return await keyTokenModel.findOne({ refreshToken})
+  }
+
+  static deleteKeyById = async (userId:string) => {
+    return await keyTokenModel.deleteOne({user:userId})
+  }
 }
 
 export default KeyTokenService;
