@@ -16,11 +16,13 @@ interface IClose extends Document {
     brand:string,
     size?:string,
     material?:string,
+    product_shop?: PopulatedDoc<IShop & Document>;
 }
 
 interface IElectronic extends Document {
     manufacturer:string,
     model?:string,
     color?:string,
+    product_shop?: PopulatedDoc<IShop & Document>;
 }
 

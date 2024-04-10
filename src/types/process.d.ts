@@ -17,3 +17,11 @@ interface Process {
         next: NextFunction,
     ): Promise<void>;
 }
+
+interface ProcessCustom {
+    (
+        req: CustomRequest,
+        res: Response,
+        next: NextFunction,
+    ): Promise<void>;
+}
