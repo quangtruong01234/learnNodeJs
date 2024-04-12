@@ -5,14 +5,15 @@ import asyncHandler from '@/helpers/asyncHandler';
 
 // Define a type for the payload
 interface Payload {
-    // Define the structure of your payload here
+    userId: string,
+    email: string,
     [key: string]: any;
 }
 const HEADER = {
     API_KEY: "x-api-key",
     CLIENT_ID: 'x-client-id',
     AUTHORIZATION: "authorization",
-    REFRESHTOKEN:'x-rtoken-id'
+    REFRESHTOKEN: 'x-rtoken-id'
 };
 const createTokenPair = async (
     payload: Payload,
@@ -96,10 +97,10 @@ const authenticationV2 = asyncHandler(async (req, res, next) => {
     if (!keyStore) throw new NotFoundError('Not found key store')
 
     //3
-    if(req.headers[HEADER.REFRESHTOKEN]){
+    if (req.headers[HEADER.REFRESHTOKEN]) {
         try {
             const refreshToken = req.headers[HEADER.REFRESHTOKEN]!
-            const decodeUser = JWT.verify(String(refreshToken), keyStore.privateKey) as JWT.JwtPayload
+            const decodeUser = JWT.verify(String(refreshToken), keyStore.privateKey) as {userId:string, email:string} 
             if (userId !== decodeUser.userId) throw new AuthFailureError('Invalid userId')
             req.keyStore = keyStore
             req.user = decodeUser
@@ -112,7 +113,7 @@ const authenticationV2 = asyncHandler(async (req, res, next) => {
     const accessToken = req.headers[HEADER.AUTHORIZATION]
     if (!accessToken) throw new AuthFailureError('Invalid request')
     try {
-        const decodeUser = JWT.verify(String(accessToken), keyStore.publicKey) as JWT.JwtPayload
+        const decodeUser= JWT.verify(String(accessToken), keyStore.publicKey) as {userId:string, email:string} 
         if (userId !== decodeUser.userId) throw new AuthFailureError('Invalid userId')
         req.keyStore = keyStore
         req.user = decodeUser // {userId, email}
@@ -123,7 +124,7 @@ const authenticationV2 = asyncHandler(async (req, res, next) => {
 
 })
 
-const verifyJWT = async (token:string,keySecret:string) => {
+const verifyJWT = async (token: string, keySecret: string) => {
     return await JWT.verify(token, keySecret)
 }
 export {

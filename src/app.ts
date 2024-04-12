@@ -26,7 +26,7 @@ app.use('/', router)
 //handling error
 
 app.use((req:Request, res:Response, next:NextFunction) => {
-    const error: any = new Error('Not Found');
+    const error: ErrorWithStatus = new Error('Not Found');
     error.status = 404
     next(error);
 })

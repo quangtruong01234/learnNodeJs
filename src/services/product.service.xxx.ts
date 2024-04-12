@@ -4,17 +4,21 @@
 
 import { BadRequestError } from "@/core/error.response";
 import { clothing, electronic, furniture, product } from "@/models/product.model";
+import { findAllDraftsForShop, findAllPublishForShop, publishProductByShop, searchProductByUser, unPublishProductByShop } from "@/models/repositories/product.repo";
 import { IShop } from "@/validations/auth";
-import { IProduct } from "@/validations/product";
+import { AttributeType, IProduct } from "@/validations/product";
 import { PopulatedDoc, Types } from "mongoose";
+
+type typeClass = typeof Electronics | typeof Clothing | typeof Furniture
+
 class ProductFactory {
     /**
      * type:'Clothing'
      * payload
      */
-    static productRegistry: { [type: string]: typeof Electronics | typeof Clothing | typeof Furniture } = {};
+    static productRegistry: { [type: string]: typeClass} = {};
 
-    static registerProductType(type: IProduct['product_type'], classRef: typeof Electronics | typeof Clothing | typeof Furniture) {
+    static registerProductType(type: IProduct['product_type'], classRef: typeClass) {
         ProductFactory.productRegistry[type] = classRef
     }
     static async createProduct(type: string, payload: IProduct) {
@@ -24,6 +28,36 @@ class ProductFactory {
         return productInstance.createProduct();
 
     }
+
+    //PUT//
+    static async publishProductByShop({product_shop,product_id}:
+        {product_shop:string,product_id:string}){
+        return await publishProductByShop({product_shop,product_id})
+    }
+    static async unPublishProductByShop({product_shop,product_id}:
+        {product_shop:string,product_id:string}){
+        return await unPublishProductByShop({product_shop,product_id})
+    }
+    //END PUT//
+
+    // query //
+    static async findAllDraftsForShop({product_shop, limit = 50, skip =0}:
+        {product_shop:string, limit?:number, skip?:number}){
+        const query = {product_shop, isDraft:true}
+        return await findAllDraftsForShop({query, limit, skip})
+    }
+
+    static async findAllPublishForShop({product_shop, limit = 50, skip =0}:
+        {product_shop:string, limit?:number, skip?:number}){
+        const query = {product_shop, isPublished:true}
+        return await findAllPublishForShop({query, limit, skip})
+    }
+
+    static async searchProducts({keySearch}:{keySearch:string}){
+        return await searchProductByUser({keySearch});
+    }
+
+    
 }
 
 // define base product class
@@ -36,7 +70,7 @@ class Product {
     product_quantity: number;
     product_type: 'Electronics' | 'Clothing' | 'Furniture';
     product_shop: PopulatedDoc<IShop & Document>;
-    product_attributes: any;
+    product_attributes: AttributeType;
     constructor({
         product_name, product_thumb, product_description, product_price,
         product_quantity, product_type, product_shop, product_attributes

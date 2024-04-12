@@ -5,7 +5,7 @@
 import { BadRequestError } from "@/core/error.response";
 import { clothing, electronic, product } from "@/models/product.model";
 import { IShop } from "@/validations/auth";
-import { IProduct } from "@/validations/product";
+import { AttributeType, IProduct } from "@/validations/product";
 import { PopulatedDoc, Types } from "mongoose";
 
 class ProductFactory {
@@ -35,7 +35,7 @@ class Product {
     product_quantity: number;
     product_type: 'Electronics' | 'Clothing' | 'Furniture';
     product_shop: PopulatedDoc<IShop & Document>;
-    product_attributes: any;
+    product_attributes: AttributeType;
     constructor({
         product_name, product_thumb, product_description, product_price,
         product_quantity, product_type, product_shop, product_attributes
