@@ -4,7 +4,7 @@
 
 import { BadRequestError } from "@/core/error.response";
 import { clothing, electronic, furniture, product } from "@/models/product.model";
-import { findAllDraftsForShop, findAllPublishForShop, publishProductByShop, searchProductByUser, unPublishProductByShop } from "@/models/repositories/product.repo";
+import { findAllDraftsForShop, findAllProducts, findAllPublishForShop, findProduct, publishProductByShop, searchProductByUser, unPublishProductByShop } from "@/models/repositories/product.repo";
 import { IShop } from "@/validations/auth";
 import { AttributeType, IProduct } from "@/validations/product";
 import { PopulatedDoc, Types } from "mongoose";
@@ -16,7 +16,7 @@ class ProductFactory {
      * type:'Clothing'
      * payload
      */
-    static productRegistry: { [type: string]: typeClass} = {};
+    static productRegistry: { [type: string]: typeClass } = {};
 
     static registerProductType(type: IProduct['product_type'], classRef: typeClass) {
         ProductFactory.productRegistry[type] = classRef
@@ -29,35 +29,54 @@ class ProductFactory {
 
     }
 
-    //PUT//
-    static async publishProductByShop({product_shop,product_id}:
-        {product_shop:string,product_id:string}){
-        return await publishProductByShop({product_shop,product_id})
+    static async updateProduct(type: string, payload: IProduct) {
+        const productClass = ProductFactory.productRegistry[type]
+        if (!productClass) throw new BadRequestError(`Invalid Product Type ${type}`)
+        const productInstance = new productClass(payload)
+        return productInstance.createProduct();
     }
-    static async unPublishProductByShop({product_shop,product_id}:
-        {product_shop:string,product_id:string}){
-        return await unPublishProductByShop({product_shop,product_id})
+
+    //PUT//
+    static async publishProductByShop({ product_shop, product_id }:
+        { product_shop: string, product_id: string }) {
+        return await publishProductByShop({ product_shop, product_id })
+    }
+    static async unPublishProductByShop({ product_shop, product_id }:
+        { product_shop: string, product_id: string }) {
+        return await unPublishProductByShop({ product_shop, product_id })
     }
     //END PUT//
 
     // query //
-    static async findAllDraftsForShop({product_shop, limit = 50, skip =0}:
-        {product_shop:string, limit?:number, skip?:number}){
-        const query = {product_shop, isDraft:true}
-        return await findAllDraftsForShop({query, limit, skip})
+    static async findAllDraftsForShop({ product_shop, limit = 50, skip = 0 }:
+        { product_shop: string, limit?: number, skip?: number }) {
+        const query = { product_shop, isDraft: true }
+        return await findAllDraftsForShop({ query, limit, skip })
     }
 
-    static async findAllPublishForShop({product_shop, limit = 50, skip =0}:
-        {product_shop:string, limit?:number, skip?:number}){
-        const query = {product_shop, isPublished:true}
-        return await findAllPublishForShop({query, limit, skip})
+    static async findAllPublishForShop({ product_shop, limit = 50, skip = 0 }:
+        { product_shop: string, limit?: number, skip?: number }) {
+        const query = { product_shop, isPublished: true }
+        return await findAllPublishForShop({ query, limit, skip })
     }
 
-    static async searchProducts({keySearch}:{keySearch:string}){
-        return await searchProductByUser({keySearch});
+    static async searchProducts({ keySearch }: { keySearch: string }) {
+        return await searchProductByUser({ keySearch });
     }
 
-    
+    static async findAllProducts({ limit = 50, sort = 'ctime', page = 1, filter = { isPublished: true } }:
+        { limit?: number, sort?: string, page?: number, filter?: { isPublished: boolean } }) {
+        return await findAllProducts({
+            limit, sort, page, filter,
+            select: ['product_name', 'product_price', 'product_thumb']
+        });
+    }
+
+    static async findProduct({ product_id }: { product_id: string }) {
+        return await findProduct({ product_id, unSelect:['__v','product_variations'] });
+    }
+
+
 }
 
 // define base product class

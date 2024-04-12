@@ -69,6 +69,22 @@ class ProductController {
             metadata: await ProductServiceV2.searchProducts({keySearch:req.params.keySearch})
         }).send(res)
     }
+
+    findAllProducts: ProcessCustom = async (req, res, next) => {
+        new SuccessResponse({
+            message: 'Get list findAllProducts success',
+            metadata: await ProductServiceV2.findAllProducts(req.query)
+        }).send(res)
+    }
+
+    findProduct: ProcessCustom = async (req, res, next) => {
+        new SuccessResponse({
+            message: 'Get findProduct success',
+            metadata: await ProductServiceV2.findProduct({
+                product_id:req.params.product_id
+            })
+        }).send(res)
+    }
     // END QUERY//
 }
 

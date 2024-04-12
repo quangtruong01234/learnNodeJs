@@ -1,6 +1,7 @@
-import { PopulatedDoc, Types } from "mongoose"
+import { PopulatedDoc, SortOrder, Types } from "mongoose"
 import { product } from "../product.model"
 import { IShop } from "@/validations/auth"
+import { getSelectData, unGetSelectData } from "@/utils"
 
 interface findAll {
     query: { product_shop: string, isDraft: boolean }, limit: number, skip: number
@@ -61,6 +62,20 @@ const unPublishProductByShop = async ({ product_shop, product_id }: publishProdu
     return modifiedCount
 }
 
+const findAllProducts= async({limit, sort, page,filter,select}:
+    {limit:number, sort:string, page:number,filter:{isPublished:boolean},select:string[]})=>{
+    const skip = (page -1) *limit;
+    const sortBy:Record<string, SortOrder> = sort ==='ctime'? {_id: -1}:{_id: 1}
+    const products=  await product.find(filter)
+    .sort(sortBy)
+    .skip(skip)
+    .limit(limit)
+    .select(getSelectData(select))
+    .lean()
+    return products
+}
+
+
 const queryProduct = async ({ query, limit, skip }: findAll | findAllPublish) => {
     return await product.find(query)
         .populate('product_shop', 'name email -_id')
@@ -71,10 +86,16 @@ const queryProduct = async ({ query, limit, skip }: findAll | findAllPublish) =>
         .exec()
 }
 
+const findProduct = async({ product_id, unSelect }: { product_id: string,unSelect:string[] })=>{
+    return await product.findById(product_id).select(unGetSelectData(unSelect))
+}
+
 export {
     findAllDraftsForShop,
     findAllPublishForShop,
     publishProductByShop,
     unPublishProductByShop,
     searchProductByUser,
+    findAllProducts,
+    findProduct
 }
