@@ -4,12 +4,13 @@
 
 import { BadRequestError } from "@/core/error.response";
 import { clothing, electronic, furniture, product } from "@/models/product.model";
-import { findAllDraftsForShop, findAllProducts, findAllPublishForShop, findProduct, publishProductByShop, searchProductByUser, unPublishProductByShop } from "@/models/repositories/product.repo";
+import { findAllDraftsForShop, findAllProducts, findAllPublishForShop, findProduct, publishProductByShop, searchProductByUser, unPublishProductByShop, updateProductById } from "@/models/repositories/product.repo";
+import { removeUndefinedObject, updateNestedObjectParser } from "@/utils";
 import { IShop } from "@/validations/auth";
-import { AttributeType, IProduct } from "@/validations/product";
+import { AttributeType, IProduct, ProductType } from "@/validations/product";
 import { PopulatedDoc, Types } from "mongoose";
 
-type typeClass = typeof Electronics | typeof Clothing | typeof Furniture
+type typeClass =  typeof Electronics | typeof Clothing | typeof Furniture
 
 class ProductFactory {
     /**
@@ -18,7 +19,7 @@ class ProductFactory {
      */
     static productRegistry: { [type: string]: typeClass } = {};
 
-    static registerProductType(type: IProduct['product_type'], classRef: typeClass) {
+    static registerProductType(type: ProductType, classRef: typeClass) {
         ProductFactory.productRegistry[type] = classRef
     }
     static async createProduct(type: string, payload: IProduct) {
@@ -29,11 +30,11 @@ class ProductFactory {
 
     }
 
-    static async updateProduct(type: string, payload: IProduct) {
+    static async updateProduct(type: string,productId:string, payload: IProduct) {
         const productClass = ProductFactory.productRegistry[type]
         if (!productClass) throw new BadRequestError(`Invalid Product Type ${type}`)
         const productInstance = new productClass(payload)
-        return productInstance.createProduct();
+        return productInstance.updateProduct(productId);
     }
 
     //PUT//
@@ -73,7 +74,7 @@ class ProductFactory {
     }
 
     static async findProduct({ product_id }: { product_id: string }) {
-        return await findProduct({ product_id, unSelect:['__v','product_variations'] });
+        return await findProduct({ product_id, unSelect: ['__v', 'product_variations'] });
     }
 
 
@@ -87,7 +88,7 @@ class Product {
     product_description?: string;
     product_price: number;
     product_quantity: number;
-    product_type: 'Electronics' | 'Clothing' | 'Furniture';
+    product_type: ProductType;
     product_shop: PopulatedDoc<IShop & Document>;
     product_attributes: AttributeType;
     constructor({
@@ -109,6 +110,11 @@ class Product {
     async createProduct(product_id: Types.ObjectId): Promise<IProduct> {
         return await product.create({ ...this, _id: product_id })
     }
+
+    // update Product
+    async updateProduct(productId: string, bodyUpdate?: this) {
+        return await updateProductById<this,typeof product>({ productId, bodyUpdate:bodyUpdate!, model: product })
+    }
 }
 
 // Define sub-class for different product types Clothing
@@ -126,6 +132,24 @@ class Clothing extends Product {
 
         return newProduct;
     }
+    async updateProduct(productId:string){
+        /**
+         * a:undefined,
+         * b:null
+         */
+        // 1. remove attr has null undefined
+        // console.log('[1]::', this)
+        const objectParams = removeUndefinedObject(this) 
+        // console.log('[2]::', objectParams)
+        // 2. Check xem update o cho nao?
+        if(objectParams.product_attributes){
+            //update child
+            await updateProductById<this,typeof clothing>({ productId,bodyUpdate:updateNestedObjectParser(objectParams.product_attributes) , model: clothing })
+        }
+
+        const updateProduct = await super.updateProduct(productId,updateNestedObjectParser(objectParams))
+        return updateProduct;
+    }
 }
 
 class Electronics extends Product {
@@ -141,6 +165,22 @@ class Electronics extends Product {
 
         return newProduct;
     }
+    // async updateProduct(productId:string){
+    //     /**
+    //      * a:undefined,
+    //      * b:null
+    //      */
+    //     // 1. remove attr has null undefined
+    //     const objectParams = this 
+    //     // 2. Check xem update o cho nao?
+    //     if(objectParams.product_attributes){
+    //         //update child
+    //         await updateProductById<this,typeof electronic>({ productId,bodyUpdate:objectParams, model: electronic })
+    //     }
+
+    //     const updateProduct = await super.updateProduct(productId,objectParams)
+    //     return updateProduct;
+    // }
 }
 
 class Furniture extends Product {
@@ -156,11 +196,27 @@ class Furniture extends Product {
 
         return newProduct;
     }
+    // async updateProduct(productId:string){
+    //     /**
+    //      * a:undefined,
+    //      * b:null
+    //      */
+    //     // 1. remove attr has null undefined
+    //     const objectParams = this 
+    //     // 2. Check xem update o cho nao?
+    //     if(objectParams.product_attributes){
+    //         //update child
+    //         await updateProductById<this,typeof furniture>({ productId,bodyUpdate:objectParams, model: furniture })
+    //     }
+
+    //     const updateProduct = await super.updateProduct(productId,objectParams)
+    //     return updateProduct;
+    // }
 }
 
 // register product types
-ProductFactory.registerProductType('Electronics', Electronics)
-ProductFactory.registerProductType('Clothing', Clothing)
-ProductFactory.registerProductType('Furniture', Furniture)
+ProductFactory.registerProductType('Electronics' as ProductType, Electronics)
+ProductFactory.registerProductType('Clothing' as ProductType, Clothing)
+ProductFactory.registerProductType('Furniture' as ProductType, Furniture)
 
 export default ProductFactory;

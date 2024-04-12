@@ -1,6 +1,11 @@
 import { Document, PopulatedDoc } from "mongoose";
 import { IShop } from "./auth";
 
+enum ProductType {
+    Electronics = 'Electronics',
+    Clothing = 'Clothing',
+    Furniture = 'Furniture'
+}
 interface IProduct extends Document {
     product_name: string;
     product_thumb: string;
@@ -8,7 +13,7 @@ interface IProduct extends Document {
     product_slug?: string;
     product_price: number;
     product_quantity: number;
-    product_type: 'Electronics' | 'Clothing' | 'Furniture';
+    product_type: ProductType;
     product_shop?: PopulatedDoc<IShop & Document>;
     product_attributes: AttributeType;
     product_ratingAverage:number,

@@ -1,7 +1,8 @@
-import { PopulatedDoc, SortOrder, Types } from "mongoose"
+import { Model, PopulatedDoc, SortOrder, Types, UpdateQuery } from "mongoose"
 import { product } from "../product.model"
 import { IShop } from "@/validations/auth"
 import { getSelectData, unGetSelectData } from "@/utils"
+import { AttributeType, IProduct } from "@/validations/product"
 
 interface findAll {
     query: { product_shop: string, isDraft: boolean }, limit: number, skip: number
@@ -75,6 +76,25 @@ const findAllProducts= async({limit, sort, page,filter,select}:
     return products
 }
 
+const findProduct = async({ product_id, unSelect }: { product_id: string,unSelect:string[] })=>{
+    return await product.findById(product_id).select(unGetSelectData(unSelect))
+}
+
+const updateProductById = async <T,M extends UpdateQuery<IProduct>>({
+    productId,
+    bodyUpdate,
+    model,
+    isNew = true
+}: {
+    productId: string,
+    bodyUpdate: T,
+    model: M,
+    isNew?: boolean
+}) => {
+    return await model.findByIdAndUpdate(productId, bodyUpdate, {
+        new: isNew
+    });
+}
 
 const queryProduct = async ({ query, limit, skip }: findAll | findAllPublish) => {
     return await product.find(query)
@@ -86,9 +106,7 @@ const queryProduct = async ({ query, limit, skip }: findAll | findAllPublish) =>
         .exec()
 }
 
-const findProduct = async({ product_id, unSelect }: { product_id: string,unSelect:string[] })=>{
-    return await product.findById(product_id).select(unGetSelectData(unSelect))
-}
+
 
 export {
     findAllDraftsForShop,
@@ -97,5 +115,6 @@ export {
     unPublishProductByShop,
     searchProductByUser,
     findAllProducts,
-    findProduct
+    findProduct,
+    updateProductById
 }
