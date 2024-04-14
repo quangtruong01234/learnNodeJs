@@ -4,6 +4,7 @@
 
 import { BadRequestError } from "@/core/error.response";
 import { clothing, electronic, furniture, product } from "@/models/product.model";
+import { insertInventory } from "@/models/repositories/inventory.repo";
 import { findAllDraftsForShop, findAllProducts, findAllPublishForShop, findProduct, publishProductByShop, searchProductByUser, unPublishProductByShop, updateProductById } from "@/models/repositories/product.repo";
 import { removeUndefinedObject, updateNestedObjectParser } from "@/utils";
 import { IShop } from "@/validations/auth";
@@ -11,7 +12,7 @@ import { AttributeType, IProduct, ProductType } from "@/validations/product";
 import { PopulatedDoc, Types } from "mongoose";
 
 type typeClass =  typeof Electronics | typeof Clothing | typeof Furniture
-
+type PromiseClass = IProduct
 class ProductFactory {
     /**
      * type:'Clothing'
@@ -107,8 +108,16 @@ class Product {
 
     // create new product
 
-    async createProduct(product_id: Types.ObjectId): Promise<IProduct> {
-        return await product.create({ ...this, _id: product_id })
+    async createProduct(product_id: Types.ObjectId): Promise<PromiseClass> {
+        const newProduct =  await product.create({ ...this, _id: product_id })
+        if(newProduct){
+            await insertInventory({
+                productId:newProduct._id,
+                shopId:this.product_shop,
+                stock:this.product_quantity
+            })
+        }
+        return newProduct;
     }
 
     // update Product
@@ -120,7 +129,7 @@ class Product {
 // Define sub-class for different product types Clothing
 
 class Clothing extends Product {
-    async createProduct(): Promise<IProduct> {
+    async createProduct(): Promise<PromiseClass> {
         const newClothing = await clothing.create({
             ...this.product_attributes,
             product_shop: this.product_shop
@@ -153,7 +162,7 @@ class Clothing extends Product {
 }
 
 class Electronics extends Product {
-    async createProduct(): Promise<IProduct> {
+    async createProduct(): Promise<PromiseClass> {
         const newElectronic = await electronic.create({
             ...this.product_attributes,
             product_shop: this.product_shop
@@ -184,7 +193,7 @@ class Electronics extends Product {
 }
 
 class Furniture extends Product {
-    async createProduct(): Promise<IProduct> {
+    async createProduct(): Promise<PromiseClass> {
         const newFurniture = await furniture.create({
             ...this.product_attributes,
             product_shop: this.product_shop
