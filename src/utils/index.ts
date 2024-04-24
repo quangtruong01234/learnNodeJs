@@ -1,11 +1,17 @@
 'use strict'
 
 import _ from 'lodash'
+import { Types } from 'mongoose';
 
 interface GetInfoDataParams<T> {
     fields: Array<keyof T>;
     object: T;
 }
+
+const convertToObjectIdMongodb = (id: string) => {
+    return new Types.ObjectId(id);
+}
+
 const getInfoData = <T>(params: GetInfoDataParams<T>) => {
     return _.pick(params.object, params.fields);
 };
@@ -43,7 +49,7 @@ const removeUndefinedObject = <T extends object>(obj: T) => {
 const updateNestedObjectParser = <T extends object>(obj: T) => {
     console.log(`[1]::`, obj);
     const final: any = {};
-    Object.keys(obj|| {}).forEach(k => {
+    Object.keys(obj || {}).forEach(k => {
         const key = k as keyof T;
         const value = obj[key] as object;
         console.log(`[3]::`, k);
@@ -62,6 +68,7 @@ const updateNestedObjectParser = <T extends object>(obj: T) => {
 };
 
 export {
+    convertToObjectIdMongodb,
     getInfoData,
     getSelectData,
     unGetSelectData,

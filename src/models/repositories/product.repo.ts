@@ -64,7 +64,7 @@ const unPublishProductByShop = async ({ product_shop, product_id }: publishProdu
 }
 
 const findAllProducts= async({limit, sort, page,filter,select}:
-    {limit:number, sort:string, page:number,filter:{isPublished:boolean},select:string[]})=>{
+    {limit:number, sort:string, page:number,filter:PopulatedDoc<IProduct & Document>,select:string[]})=>{
     const skip = (page -1) *limit;
     const sortBy:Record<string, SortOrder> = sort ==='ctime'? {_id: -1}:{_id: 1}
     const products=  await product.find(filter)
