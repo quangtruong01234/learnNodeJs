@@ -1,7 +1,7 @@
 import { Model, PopulatedDoc, SortOrder, Types, UpdateQuery } from "mongoose"
 import { product } from "../product.model"
 import { IShop } from "@/validations/auth"
-import { getSelectData, unGetSelectData } from "@/utils"
+import { convertToObjectIdMongodb, getSelectData, unGetSelectData } from "@/utils"
 import { AttributeType, IProduct } from "@/validations/product"
 
 interface findAll {
@@ -106,6 +106,10 @@ const queryProduct = async ({ query, limit, skip }: findAll | findAllPublish) =>
         .exec()
 }
 
+const getProductById = async (productId: string)=>{
+    return await product.findOne({_id:convertToObjectIdMongodb(productId)}).lean()
+}
+
 
 
 export {
@@ -116,5 +120,6 @@ export {
     searchProductByUser,
     findAllProducts,
     findProduct,
-    updateProductById
+    updateProductById,
+    getProductById
 }

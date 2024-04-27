@@ -70,7 +70,7 @@ class ProductFactory {
         { limit?: number, sort?: string, page?: number, filter?: { isPublished: boolean } }) {
         return await findAllProducts({
             limit, sort, page, filter,
-            select: ['product_name', 'product_price', 'product_thumb']
+            select: ['product_name', 'product_price', 'product_thumb','product_shop']
         });
     }
 

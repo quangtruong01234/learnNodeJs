@@ -5,6 +5,7 @@ import { apiKey, permission } from "../auth/checkAuth";
 import accessRoutes from "./access";
 import productRoutes from "./product";
 import discountRoutes from "./discount";
+import cartRoutes from "./cart";
 const router = express.Router();
 
 //check apiKey
@@ -13,6 +14,7 @@ router.use(apiKey)
 router.use(permission('0000'))
 
 router.use('/v1/api/product',productRoutes)
+router.use('/v1/api/cart',cartRoutes)
 router.use('/v1/api/discount',discountRoutes)
 router.use('/v1/api',accessRoutes)
 

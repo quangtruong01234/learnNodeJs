@@ -7,7 +7,6 @@ interface ErrorWithStatus extends Error {
 }
 interface CustomRequest extends Request {
     keyStore: IKeyToken;
-
     user: {userId:string, email:string} ;
     refreshToken: string | string[]
 
