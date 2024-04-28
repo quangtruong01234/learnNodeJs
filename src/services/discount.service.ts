@@ -15,6 +15,7 @@ import { findAllProducts } from '@/models/repositories/product.repo';
 import { checkDiscountExists, findAllDiscountCodesUnSelect } from '@/models/repositories/discount.repo';
 import { IDiscount } from '@/validations/discount';
 import { CreateDiscount } from "@/types/createItem";
+import { CheckProduct } from "@/types/checkout";
 class DiscountService {
     static async createDiscountCode(payload: CreateDiscount) {
         const { code, start_date, end_date, is_active,
@@ -123,11 +124,7 @@ class DiscountService {
     }
 
     static async getDiscountAmount({ codeId, userId, shopId, products }: {
-        codeId: string, userId: string, shopId: string, products: {
-            productId: string,
-            quantity: number,
-            price: number
-        }[]
+        codeId: string, userId: string, shopId: string, products: CheckProduct[]
     }) {
         const foundDiscount: IDiscount = await checkDiscountExists<typeof discount>({
             model: discount,

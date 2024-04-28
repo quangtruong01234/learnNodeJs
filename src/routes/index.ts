@@ -6,6 +6,7 @@ import accessRoutes from "./access";
 import productRoutes from "./product";
 import discountRoutes from "./discount";
 import cartRoutes from "./cart";
+import checkoutRoutes from "./checkout";
 const router = express.Router();
 
 //check apiKey
@@ -13,6 +14,7 @@ router.use(apiKey)
 //check permission
 router.use(permission('0000'))
 
+router.use('/v1/api/checkout',checkoutRoutes)
 router.use('/v1/api/product',productRoutes)
 router.use('/v1/api/cart',cartRoutes)
 router.use('/v1/api/discount',discountRoutes)

@@ -1,8 +1,9 @@
-import { Model, PopulatedDoc, SortOrder, Types, UpdateQuery } from "mongoose"
+import {PopulatedDoc, SortOrder, Types, UpdateQuery } from "mongoose"
 import { product } from "../product.model"
-import { IShop } from "@/validations/auth"
 import { convertToObjectIdMongodb, getSelectData, unGetSelectData } from "@/utils"
-import { AttributeType, IProduct } from "@/validations/product"
+import { IProduct } from "@/validations/product"
+import { CheckProduct } from "@/types/checkout"
+
 
 interface findAll {
     query: { product_shop: string, isDraft: boolean }, limit: number, skip: number
@@ -110,6 +111,20 @@ const getProductById = async (productId: string)=>{
     return await product.findOne({_id:convertToObjectIdMongodb(productId)}).lean()
 }
 
+const checkProductByServer = async (products: CheckProduct[])=>{
+    return await Promise.all(products.map(async product=>{
+        const foundProduct = await getProductById(product.productId)
+        if(foundProduct){
+            return {
+                price:foundProduct.product_price,
+                quantity:product.quantity,
+                productId:product.productId
+            }
+        }
+        return
+    }))
+}
+
 
 
 export {
@@ -121,5 +136,6 @@ export {
     findAllProducts,
     findProduct,
     updateProductById,
-    getProductById
+    getProductById,
+    checkProductByServer
 }
